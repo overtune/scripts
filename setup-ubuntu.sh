@@ -10,3 +10,6 @@ cd ~
 git clone https://github.com/overtune/dotfiles.git
 cd dotfiles
 bash makesymlinks.sh
+
+vim +PlugInstall +qall
+cd ~/.vim/plugged/YouCompleteMe && ./install.py
