@@ -1,6 +1,6 @@
 # Update and install software
-sudo apt-get update
-sudo apt-get install vim tmux git zsh mosh -y
+sudo apt update
+sudo apt install vim tmux git zsh mosh python cmake -y
 
 # Install Oh-my-shell
 sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
