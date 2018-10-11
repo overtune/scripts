@@ -1,5 +1,6 @@
 # Update and install software
 sudo apt update
+sudo add-apt-repository universe
 sudo apt install vim tmux git zsh mosh build-essential cmake python3-dev -y
 
 # Install Oh-my-shell
