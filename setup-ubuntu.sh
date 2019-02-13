@@ -18,9 +18,7 @@ sudo add-apt-repository universe
 sudo apt install vim tmux git zsh mosh build-essential cmake python3-dev -y
 
 # Install Oh-my-shell
-curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh
-sh install.sh
-rm install.sh
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 
 # Get the dotfiles
 cd ~
