@@ -29,16 +29,10 @@ printf "${OK}Install vim\n"
 brew install vim
 printf "${OK}Install tmux\n"
 brew install tmux
-printf "${OK}Install nodejs\n"
-brew install nodejs
+printf "${OK}Install node\n"
+brew install node
 printf "${OK}Install python3\n"
-brew install python3
-printf "${OK}Install alacritty\n"
-brew install alacritty
-printf "${OK}Install docker\n"
-brew install docker
-printf "${OK}Install qmktoolbox\n"
-brew install qmktoolbox
+brew install python@3.9
 printf "${OK}Install thefuck\n"
 brew install thefuck
 printf "${OK}Install ack\n"
@@ -48,6 +42,15 @@ brew install fff
 printf "${OK}Install fzf\n"
 brew install fzf
 $(brew --prefix)/opt/fzf/install
+printf "${OK}Install iterm2\n"
+brew install --cask iterm2
+printf "${OK}Install alacritty\n"
+brew install --cask alacritty
+printf "${OK}Install docker\n"
+brew install --cask docker
+printf "${OK}Install qmktoolbox\n"
+brew tap homebrew/cask-drivers
+brew install --cask qmk-toolbox
 
 # Install mas 
 printf "${OK}Install mas\n"
