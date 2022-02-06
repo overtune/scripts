@@ -6,7 +6,10 @@
 cd $HOME
 
 # Install software
-sudo pacman -S --needed vim tmux git zsh chromium
+sudo pacman -S --needed vim tmux git zsh chromium snapd
+
+# Enable snap
+sudo systemctl enable --now snapd.socket
 
 # Install ohmyzsh
 sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" 
@@ -24,3 +27,6 @@ export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || pr
 
 # Install node
 nvm install node
+
+# Install snap
+# sudo snap install supertuxkart
