@@ -6,7 +6,7 @@
 cd $HOME
 
 # Install software
-sudo pacman -S --needed vim tmux git zsh
+sudo pacman -S --needed vim tmux git zsh chromium
 
 # Install ohmyzsh
 sh -c "$(curl -fsSL https://raw.github.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" 
