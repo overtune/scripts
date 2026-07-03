@@ -9,6 +9,7 @@ import (
 	"github.com/charmbracelet/bubbles/list"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"scriptstui/internal/meta"
 )
 
 var detailStyle = lipgloss.NewStyle().Padding(0, 2).Border(lipgloss.RoundedBorder(), false, false, false, true)
@@ -17,6 +18,7 @@ type appState int
 
 const (
 	stateList appState = iota
+	stateArgs
 	stateRunning
 )
 
@@ -29,6 +31,9 @@ type model struct {
 	output  []string
 	exited  bool
 	code    int
+	form    argForm
+	pending meta.ScriptMeta // script awaiting args
+	formErr string
 }
 
 func newModel(items []list.Item) model {
@@ -56,6 +61,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case tea.KeyMsg:
+		if m.state == stateArgs {
+			switch msg.String() {
+			case "esc":
+				m.state = stateList
+				return m, nil
+			case "enter":
+				vals := m.form.values()
+				if miss := missingRequired(m.pending.Args, vals); len(miss) > 0 {
+					m.formErr = "Required: " + strings.Join(miss, ", ")
+					return m, nil
+				}
+				m.state = stateRunning
+				m.output = nil
+				m.exited = false
+				return m, startRunFor(&m, m.pending.Path, vals)
+			}
+			var cmd tea.Cmd
+			m.form, cmd = m.form.update(msg)
+			return m, cmd
+		}
 		if m.state == stateRunning {
 			if msg.String() == "esc" && m.exited {
 				m.state = stateList
@@ -71,11 +96,17 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				return m, tea.Quit
 			case "enter":
 				if sel, ok := m.list.SelectedItem().(scriptItem); ok {
-					m.state = stateRunning
-					m.output = nil
-					m.exited = false
-					cmd := startRunFor(&m, sel.m.Path, nil)
-					return m, cmd
+					if len(sel.m.Args) == 0 {
+						m.state = stateRunning
+						m.output = nil
+						m.exited = false
+						return m, startRunFor(&m, sel.m.Path, nil)
+					}
+					m.state = stateArgs
+					m.pending = sel.m
+					m.form = newArgForm(sel.m.Args)
+					m.formErr = ""
+					return m, nil
 				}
 			}
 		}
@@ -95,6 +126,13 @@ func startRunFor(m *model, path string, args []string) tea.Cmd {
 }
 
 func (m model) View() string {
+	if m.state == stateArgs {
+		v := m.form.view()
+		if m.formErr != "" {
+			v += "\n" + m.formErr + "\n"
+		}
+		return v
+	}
 	if m.state == stateRunning {
 		return m.runningView()
 	}
