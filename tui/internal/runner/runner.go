@@ -25,20 +25,20 @@ func Run(ctx context.Context, path string, args []string) (<-chan Line, <-chan i
 		cmd := exec.CommandContext(ctx, path, args...)
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
-			lines <- Line{Text: err.Error(), IsErr: true}
+			emitErr(ctx, lines, err.Error())
 			close(lines)
 			done <- 1
 			return
 		}
 		stderr, err := cmd.StderrPipe()
 		if err != nil {
-			lines <- Line{Text: err.Error(), IsErr: true}
+			emitErr(ctx, lines, err.Error())
 			close(lines)
 			done <- 1
 			return
 		}
 		if err := cmd.Start(); err != nil {
-			lines <- Line{Text: err.Error(), IsErr: true}
+			emitErr(ctx, lines, err.Error())
 			close(lines)
 			done <- 1
 			return
@@ -63,6 +63,16 @@ func Run(ctx context.Context, path string, args []string) (<-chan Line, <-chan i
 	}()
 
 	return lines, done
+}
+
+// emitErr sends an error Line on lines, but abandons the send if ctx is
+// cancelled before the consumer receives it, preventing a permanent block
+// when the caller has stopped reading lines.
+func emitErr(ctx context.Context, lines chan<- Line, msg string) {
+	select {
+	case lines <- Line{Text: msg, IsErr: true}:
+	case <-ctx.Done():
+	}
 }
 
 func streamPipe(ctx context.Context, r io.Reader, isErr bool, out chan<- Line, wg *sync.WaitGroup) {

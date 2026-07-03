@@ -80,3 +80,22 @@ func TestRunCancelUnblocksOnAbandonedConsumer(t *testing.T) {
 		t.Fatal("leaked/hung: done did not fire after context cancellation")
 	}
 }
+
+// TestRunStartFailureAbandonedConsumerUnblocks verifies that the
+// start-failure error sends in Run's goroutine (StdoutPipe/StderrPipe/Start
+// errors) honor context cancellation instead of blocking forever when the
+// consumer never reads from lines.
+func TestRunStartFailureAbandonedConsumerUnblocks(t *testing.T) {
+	ctx, cancel := context.WithCancel(context.Background())
+	lines, done := Run(ctx, "/nonexistent/does-not-exist-xyz.sh", nil)
+	_ = lines // deliberately never drained
+
+	cancel()
+
+	select {
+	case <-done:
+		// success: the start-failure error send was abandonable and done fired.
+	case <-time.After(2 * time.Second):
+		t.Fatal("leaked/hung on start-failure abandonment")
+	}
+}
