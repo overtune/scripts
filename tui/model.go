@@ -14,6 +14,13 @@ import (
 
 var detailStyle = lipgloss.NewStyle().Padding(0, 2).Border(lipgloss.RoundedBorder(), false, false, false, true)
 
+// warnStyle renders metadata parse warnings prominently in the detail pane.
+var warnStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("214")) // orange
+
+// stderrStyle renders stderr output lines distinctly from stdout in the
+// running view.
+var stderrStyle = lipgloss.NewStyle().Foreground(lipgloss.Color("196")) // red
+
 type appState int
 
 const (
@@ -28,7 +35,7 @@ type model struct {
 	height  int
 	state   appState
 	session *runSession
-	output  []string
+	output  []outputLineMsg
 	exited  bool
 	code    int
 	form    argForm
@@ -52,7 +59,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		return m, nil
 
 	case outputLineMsg:
-		m.output = append(m.output, msg.Text)
+		m.output = append(m.output, msg)
 		return m, m.session.readNext()
 
 	case doneMsg:
@@ -145,7 +152,11 @@ func (m model) runningView() string {
 	var b strings.Builder
 	b.WriteString("Running...\n\n")
 	for _, line := range m.output {
-		b.WriteString(line)
+		if line.IsErr {
+			b.WriteString(stderrStyle.Render(line.Text))
+		} else {
+			b.WriteString(line.Text)
+		}
 		b.WriteString("\n")
 	}
 	if m.exited {
@@ -165,6 +176,9 @@ func (m model) detailView() string {
 	}
 	var b strings.Builder
 	fmt.Fprintf(&b, "%s\n\n", sel.m.Name)
+	if sel.m.Warning != "" {
+		fmt.Fprintf(&b, "%s\n\n", warnStyle.Render("⚠ "+sel.m.Warning))
+	}
 	if sel.m.Description != "" {
 		fmt.Fprintf(&b, "%s\n\n", sel.m.Description)
 	}

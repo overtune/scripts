@@ -4,6 +4,8 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+
+	"scriptstui/internal/meta"
 )
 
 func writeFile(t *testing.T, path, content string) {
@@ -48,6 +50,52 @@ echo hi
 	}
 	if documented, ok := byName["raw.py"]; !ok || documented {
 		t.Fatalf("expected undocumented raw.py, got: %+v", got)
+	}
+}
+
+func TestScanDistinguishesMalformedMetaFromNoMeta(t *testing.T) {
+	root := t.TempDir()
+	writeFile(t, filepath.Join(root, "net", "broken.sh"), `#!/bin/bash
+# @meta
+# name: : :
+# @end
+echo hi
+`)
+	writeFile(t, filepath.Join(root, "dev", "plain.sh"), "echo hi\n")
+
+	got, err := Scan(root)
+	if err != nil {
+		t.Fatalf("Scan error: %v", err)
+	}
+	if len(got) != 2 {
+		t.Fatalf("expected 2 scripts, got %d: %+v", len(got), got)
+	}
+
+	byName := map[string]meta.ScriptMeta{}
+	for _, m := range got {
+		byName[m.Name] = m
+	}
+
+	broken, ok := byName["broken.sh"]
+	if !ok {
+		t.Fatalf("broken.sh missing from scan: %+v", got)
+	}
+	if broken.Documented {
+		t.Fatalf("expected broken.sh to be undocumented, got: %+v", broken)
+	}
+	if broken.Warning == "" {
+		t.Fatalf("expected broken.sh to have a non-empty parse warning, got: %+v", broken)
+	}
+
+	plain, ok := byName["plain.sh"]
+	if !ok {
+		t.Fatalf("plain.sh missing from scan: %+v", got)
+	}
+	if plain.Documented {
+		t.Fatalf("expected plain.sh to be undocumented, got: %+v", plain)
+	}
+	if plain.Warning != "" {
+		t.Fatalf("expected plain.sh to have no parse warning, got: %+v", plain)
 	}
 }
 

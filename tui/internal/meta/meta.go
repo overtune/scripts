@@ -26,6 +26,7 @@ type ScriptMeta struct {
 
 	Path       string `yaml:"-"` // resolved during scan
 	Documented bool   `yaml:"-"` // false when no valid block was found
+	Warning    string `yaml:"-"` // human-readable parse-warning message, empty when none
 }
 
 // ErrNoMetaBlock is returned when no @meta block is found in the scanned lines.

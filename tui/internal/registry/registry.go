@@ -2,6 +2,7 @@
 package registry
 
 import (
+	"errors"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -36,6 +37,9 @@ func Scan(root string) ([]meta.ScriptMeta, error) {
 		m, perr := meta.Parse(content)
 		if perr != nil {
 			m = meta.ScriptMeta{Name: d.Name()}
+			if !errors.Is(perr, meta.ErrNoMetaBlock) {
+				m.Warning = "metadata parse error: " + perr.Error()
+			}
 		}
 		if m.Category == "" {
 			m.Category = filepath.Base(filepath.Dir(path))
