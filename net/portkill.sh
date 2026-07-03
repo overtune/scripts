@@ -1,4 +1,13 @@
 #!/bin/bash
+# @meta
+# name: portkill
+# description: Kill the process listening on a given TCP port
+# category: net
+# args:
+#   - name: port
+#     required: true
+#     help: TCP port number to kill
+# @end
 
 PORT=$1
 if [ "$PORT" ]; then
