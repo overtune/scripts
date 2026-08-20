@@ -6,7 +6,7 @@ runs them.
 
 ## Layout
 
-- `net/`, `git/`, `files/`, `dev/`, `media/` — scripts grouped by domain
+- `net/`, `git/`, `files/`, `dev/`, `media/`, `sys/` — scripts grouped by domain
 - `templates/` — starter script showing the metadata convention
 - `tui/` — the Go/Bubble Tea launcher
 
